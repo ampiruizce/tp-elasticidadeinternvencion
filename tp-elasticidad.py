@@ -1,8 +1,10 @@
-# TP Economía para Ingenieros — App completa en Streamlit
-
 import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
+
+# =====================================================
+# CONFIGURACION PAGINA
+# =====================================================
 
 st.set_page_config(
     page_title="Simulador Económico",
@@ -15,6 +17,7 @@ st.set_page_config(
 
 st.title("📈 Simulador de Mercado e Intervenciones del Estado")
 st.markdown("### Economía para Ingenieros - UNSTA")
+
 st.markdown(
     "#### 👩‍💻 Integrantes: Amparo Ruiz • Candelaria Lopez Avila • Luz Maria Ponce de Leon"
 )
@@ -44,6 +47,11 @@ tema = st.sidebar.selectbox(
 )
 
 st.sidebar.markdown("---")
+
+# =====================================================
+# PARAMETROS
+# =====================================================
+
 st.sidebar.subheader("Demanda")
 
 a = st.sidebar.slider("a (Demanda)", 10, 200, 120)
@@ -66,10 +74,8 @@ if b + d == 0:
 # FUNCIONES
 # =====================================================
 
-
 def demanda(P):
     return a - b * P
-
 
 
 def oferta(P):
@@ -87,16 +93,22 @@ Q_eq = demanda(P_eq)
 # =====================================================
 
 P = np.linspace(0, 100, 500)
+
 Qd = demanda(P)
 Qo = oferta(P)
 
 # =====================================================
-# GRAFICO
+# GRAFICO BASE
 # =====================================================
 
 fig = go.Figure()
 
+# =====================================================
+# TEMA OSCURO
+# =====================================================
+
 if tema == "Oscuro":
+
     fig.update_layout(
         template="plotly_dark",
         paper_bgcolor="#0E1117",
@@ -104,21 +116,39 @@ if tema == "Oscuro":
         font=dict(color="white")
     )
 
+# =====================================================
+# CURVA DEMANDA
+# =====================================================
+
 fig.add_trace(go.Scatter(
     x=Qd,
     y=P,
     mode='lines',
     name='Demanda',
-    line=dict(color='red', width=4)
+    line=dict(
+        color='#ff4b4b',
+        width=5
+    )
 ))
+
+# =====================================================
+# CURVA OFERTA
+# =====================================================
 
 fig.add_trace(go.Scatter(
     x=Qo,
     y=P,
     mode='lines',
     name='Oferta',
-    line=dict(color='green', width=4)
+    line=dict(
+        color='#00cc66',
+        width=5
+    )
 ))
+
+# =====================================================
+# EQUILIBRIO
+# =====================================================
 
 fig.add_trace(go.Scatter(
     x=[Q_eq],
@@ -127,8 +157,68 @@ fig.add_trace(go.Scatter(
     name='Equilibrio',
     text=['Equilibrio'],
     textposition='top center',
-    marker=dict(size=18, color='yellow')
+    marker=dict(
+        size=22,
+        color='yellow',
+        line=dict(color='white', width=2)
+    )
 ))
+
+# =====================================================
+# LAYOUT PROFESIONAL
+# =====================================================
+
+fig.update_layout(
+
+    title={
+        'text': f"📈 {modulo}",
+        'x': 0.5,
+        'xanchor': 'center',
+        'font': dict(size=28, color='white')
+    },
+
+    xaxis=dict(
+        title='Cantidad',
+        title_font=dict(size=20, color='white'),
+        tickfont=dict(size=14, color='white'),
+        showgrid=True,
+        gridcolor='rgba(255,255,255,0.15)'
+    ),
+
+    yaxis=dict(
+        title='Precio',
+        title_font=dict(size=20, color='white'),
+        tickfont=dict(size=14, color='white'),
+        showgrid=True,
+        gridcolor='rgba(255,255,255,0.15)'
+    ),
+
+    legend=dict(
+        font=dict(size=16, color='white'),
+        bgcolor='rgba(0,0,0,0)',
+        x=1.02,
+        y=1
+    ),
+
+    paper_bgcolor='#0E1117',
+    plot_bgcolor='#0E1117',
+
+    font=dict(
+        family='Arial',
+        color='white'
+    ),
+
+    hovermode='closest',
+
+    height=750,
+
+    margin=dict(
+        l=50,
+        r=150,
+        t=80,
+        b=50
+    )
+)
 
 # =====================================================
 # FORMULAS
@@ -153,23 +243,17 @@ with col3:
     st.metric("Pendiente Demanda", -b)
 
 # =====================================================
-# MERCADO COMPETITIVO
+# MODULO MERCADO
 # =====================================================
 
 if modulo == "Mercado Competitivo":
 
     st.subheader("📊 Mercado Competitivo")
 
-    fig.update_layout(
-        title="Oferta y Demanda",
-        xaxis_title="Cantidad",
-        yaxis_title="Precio",
-        height=700
-    )
-
     st.plotly_chart(fig, use_container_width=True)
 
     st.markdown("---")
+
     st.subheader("📚 Explicación Económica")
 
     st.write(
@@ -177,7 +261,7 @@ if modulo == "Mercado Competitivo":
     )
 
 # =====================================================
-# ELASTICIDAD
+# MODULO ELASTICIDAD
 # =====================================================
 
 elif modulo == "Elasticidad":
@@ -226,15 +310,11 @@ elif modulo == "Elasticidad":
         y=[P1, P2],
         mode='markers',
         name='Puntos Elasticidad',
-        marker=dict(size=12, color='cyan')
+        marker=dict(
+            size=14,
+            color='cyan'
+        )
     ))
-
-    fig.update_layout(
-        title="Elasticidad de la Demanda",
-        xaxis_title="Cantidad",
-        yaxis_title="Precio",
-        height=700
-    )
 
     st.plotly_chart(fig, use_container_width=True)
 
@@ -249,7 +329,7 @@ elif modulo == "Precio Máximo":
     precio_max = st.slider(
         "Precio Máximo",
         1,
-        int(max(P)),
+        100,
         int(P_eq - 10) if P_eq > 10 else 5
     )
 
@@ -269,18 +349,17 @@ elif modulo == "Precio Máximo":
     with col3:
         st.metric("Escasez", round(escasez, 2))
 
-    fig.add_hline(y=precio_max)
-
-    fig.update_layout(
-        title="Precio Máximo",
-        xaxis_title="Cantidad",
-        yaxis_title="Precio",
-        height=700
+    fig.add_hline(
+        y=precio_max,
+        line_dash="dash",
+        line_color="orange"
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
-    st.warning("El precio máximo genera escasez porque la demanda supera a la oferta.")
+    st.warning(
+        "El precio máximo genera escasez porque la demanda supera a la oferta."
+    )
 
 # =====================================================
 # PRECIO MINIMO
@@ -293,7 +372,7 @@ elif modulo == "Precio Mínimo":
     precio_min = st.slider(
         "Precio Mínimo",
         1,
-        int(max(P)),
+        100,
         int(P_eq + 10)
     )
 
@@ -313,18 +392,17 @@ elif modulo == "Precio Mínimo":
     with col3:
         st.metric("Excedente", round(excedente, 2))
 
-    fig.add_hline(y=precio_min)
-
-    fig.update_layout(
-        title="Precio Mínimo",
-        xaxis_title="Cantidad",
-        yaxis_title="Precio",
-        height=700
+    fig.add_hline(
+        y=precio_min,
+        line_dash="dash",
+        line_color="purple"
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
-    st.warning("El precio mínimo genera excedente porque la oferta supera a la demanda.")
+    st.warning(
+        "El precio mínimo genera excedente porque la oferta supera a la demanda."
+    )
 
 # =====================================================
 # IMPUESTOS
@@ -334,7 +412,12 @@ elif modulo == "Impuestos":
 
     st.subheader("💰 Impuestos")
 
-    impuesto = st.slider("Impuesto", 1, 50, 10)
+    impuesto = st.slider(
+        "Impuesto",
+        1,
+        50,
+        10
+    )
 
     def oferta_impuesto(P):
         return c + d * (P - impuesto)
@@ -362,7 +445,10 @@ elif modulo == "Impuestos":
         y=P,
         mode='lines',
         name='Oferta con Impuesto',
-        line=dict(color='orange', width=4)
+        line=dict(
+            color='orange',
+            width=5
+        )
     ))
 
     fig.add_trace(go.Scatter(
@@ -371,15 +457,11 @@ elif modulo == "Impuestos":
         mode='markers+text',
         text=['Nuevo Equilibrio'],
         textposition='bottom center',
-        marker=dict(size=18, color='orange')
+        marker=dict(
+            size=20,
+            color='orange'
+        )
     ))
-
-    fig.update_layout(
-        title="Impacto del Impuesto",
-        xaxis_title="Cantidad",
-        yaxis_title="Precio",
-        height=700
-    )
 
     st.plotly_chart(fig, use_container_width=True)
 
@@ -403,7 +485,12 @@ elif modulo == "Subsidios":
 
     st.subheader("🏛️ Subsidios")
 
-    subsidio = st.slider("Subsidio", 1, 50, 10)
+    subsidio = st.slider(
+        "Subsidio",
+        1,
+        50,
+        10
+    )
 
     def oferta_subsidio(P):
         return c + d * (P + subsidio)
@@ -426,15 +513,11 @@ elif modulo == "Subsidios":
         y=P,
         mode='lines',
         name='Oferta con Subsidio',
-        line=dict(color='blue', width=4)
+        line=dict(
+            color='blue',
+            width=5
+        )
     ))
-
-    fig.update_layout(
-        title="Impacto del Subsidio",
-        xaxis_title="Cantidad",
-        yaxis_title="Precio",
-        height=700
-    )
 
     st.plotly_chart(fig, use_container_width=True)
 
@@ -458,7 +541,12 @@ elif modulo == "Cuotas":
 
     st.subheader("📦 Cuotas")
 
-    cuota = st.slider("Límite de Cantidad", 1, int(max(Qd)), 40)
+    cuota = st.slider(
+        "Límite de Cantidad",
+        1,
+        int(max(Qd)),
+        40
+    )
 
     precio_cuota = (a - cuota) / b
 
@@ -470,7 +558,11 @@ elif modulo == "Cuotas":
     with col2:
         st.metric("Precio Resultante", round(precio_cuota, 2))
 
-    fig.add_vline(x=cuota)
+    fig.add_vline(
+        x=cuota,
+        line_dash="dash",
+        line_color="purple"
+    )
 
     fig.add_trace(go.Scatter(
         x=[cuota],
@@ -478,19 +570,17 @@ elif modulo == "Cuotas":
         mode='markers+text',
         text=['Cuota'],
         textposition='top center',
-        marker=dict(size=18, color='purple')
+        marker=dict(
+            size=20,
+            color='purple'
+        )
     ))
-
-    fig.update_layout(
-        title="Sistema de Cuotas",
-        xaxis_title="Cantidad",
-        yaxis_title="Precio",
-        height=700
-    )
 
     st.plotly_chart(fig, use_container_width=True)
 
-    st.warning("La cuota restringe la cantidad ofrecida y eleva el precio.")
+    st.warning(
+        "La cuota restringe la cantidad ofrecida y eleva el precio."
+    )
 
 # =====================================================
 # FOOTER
@@ -500,84 +590,4 @@ st.markdown("---")
 
 st.caption(
     "TP Economía para Ingenieros • UNSTA • Simulador desarrollado por Amparo Ruiz, Candelaria Lopez Avila y Luz Maria Ponce de Leon"
-)
-fig = go.Figure()
-
-fig.update_layout(
-    template="plotly_dark",
-    paper_bgcolor="#0E1117",
-    plot_bgcolor="#0E1117",
-    font=dict(color="white")
-)
-fig.add_trace(go.Scatter(
-    x=Qd,
-    y=P,
-    mode='lines',
-    name='Demanda',
-    line=dict(color='red', width=4)
-))
-
-fig.add_trace(go.Scatter(
-    x=Qo,
-    y=P,
-    mode='lines',
-    name='Oferta',
-    line=dict(color='green', width=4)
-))
-st.markdown("---")
-
-st.subheader("📚 Explicación Económica")
-
-if P_eq > 0:
-    st.write(
-        "El equilibrio de mercado ocurre cuando la cantidad demandada es igual a la cantidad ofrecida."
-    )
-
-if modulo == "Impuestos":
-    st.write(
-        "El impuesto incrementa el costo de producción, desplaza la oferta hacia la izquierda y genera una caída en la cantidad de equilibrio."
-    )
-
-if modulo == "Precio Máximo":
-    st.write(
-        "El precio máximo genera escasez porque la demanda supera a la oferta."
-    )
-
-if modulo == "Precio Mínimo":
-    st.write(
-        "El precio mínimo genera excedente porque la oferta supera a la demanda."
-    )
-st.subheader("📊 Comparación")
-
-st.table({
-    "Situación": ["Inicial", "Nueva"],
-    "Precio": [round(P_eq,2), round(P_nuevo,2)],
-    "Cantidad": [round(Q_eq,2), round(Q_nuevo,2)]
-})
-
-if b + d == 0:
-    st.error("Las pendientes generan división por cero")
-    st.stop()
-st.markdown("---")
-st.caption(
-    "TP Economía para Ingenieros • UNSTA • Simulador desarrollado por Amparo Ruiz, Candelaria Lopez Avila y Luz Maria Ponce de Leon"
-)
-
-marker=dict(size=18, color='yellow')
-st.latex(r"Q_d = a - bP")
-st.latex(r"Q_o = c + dP")
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.metric("Precio Equilibrio", round(P_eq,2))
-
-with col2:
-    st.metric("Cantidad Equilibrio", round(Q_eq,2))
-
-with col3:
-    st.metric("Pendiente Demanda", -b)
-
-tema = st.sidebar.selectbox(
-    "Tema",
-    ["Oscuro", "Claro"]
 )
