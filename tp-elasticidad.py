@@ -1,3 +1,4 @@
+# TP Economía para Ingenieros — App completa en Streamlit
 import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
@@ -9,6 +10,7 @@ st.set_page_config(
 
 st.title("📈 Simulador de Mercado e Intervenciones del Estado")
 st.markdown("### Economía para Ingenieros - UNSTA")
+st.markdown("#### 👩‍💻 Integrantes: Amparo Ruiz • Candelaria Lopez Avila • Luz Maria Ponce de Leon")
 
 # =====================================================
 # SIDEBAR
