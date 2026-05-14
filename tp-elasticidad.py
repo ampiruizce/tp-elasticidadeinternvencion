@@ -1,4 +1,5 @@
 # TP Economía para Ingenieros — App completa en Streamlit
+
 import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
@@ -8,9 +9,15 @@ st.set_page_config(
     layout="wide"
 )
 
+# =====================================================
+# TITULO
+# =====================================================
+
 st.title("📈 Simulador de Mercado e Intervenciones del Estado")
 st.markdown("### Economía para Ingenieros - UNSTA")
-st.markdown("#### 👩‍💻 Integrantes: Amparo Ruiz • Candelaria Lopez Avila • Luz Maria Ponce de Leon")
+st.markdown(
+    "#### 👩‍💻 Integrantes: Amparo Ruiz • Candelaria Lopez Avila • Luz Maria Ponce de Leon"
+)
 
 # =====================================================
 # SIDEBAR
@@ -31,6 +38,11 @@ modulo = st.sidebar.selectbox(
     ]
 )
 
+tema = st.sidebar.selectbox(
+    "Tema",
+    ["Oscuro", "Claro"]
+)
+
 st.sidebar.markdown("---")
 st.sidebar.subheader("Demanda")
 
@@ -43,16 +55,25 @@ c = st.sidebar.slider("c (Oferta)", -50, 100, 20)
 d = st.sidebar.slider("d (Oferta)", 1, 20, 2)
 
 # =====================================================
+# VALIDACION
+# =====================================================
+
+if b + d == 0:
+    st.error("Las pendientes generan división por cero")
+    st.stop()
+
+# =====================================================
 # FUNCIONES
 # =====================================================
+
 
 def demanda(P):
     return a - b * P
 
 
+
 def oferta(P):
     return c + d * P
-
 
 # =====================================================
 # EQUILIBRIO
@@ -62,27 +83,41 @@ P_eq = (a - c) / (b + d)
 Q_eq = demanda(P_eq)
 
 # =====================================================
-# GRAFICO BASE
+# DATOS GRAFICOS
 # =====================================================
 
 P = np.linspace(0, 100, 500)
 Qd = demanda(P)
 Qo = oferta(P)
 
+# =====================================================
+# GRAFICO
+# =====================================================
+
 fig = go.Figure()
+
+if tema == "Oscuro":
+    fig.update_layout(
+        template="plotly_dark",
+        paper_bgcolor="#0E1117",
+        plot_bgcolor="#0E1117",
+        font=dict(color="white")
+    )
 
 fig.add_trace(go.Scatter(
     x=Qd,
     y=P,
     mode='lines',
-    name='Demanda'
+    name='Demanda',
+    line=dict(color='red', width=4)
 ))
 
 fig.add_trace(go.Scatter(
     x=Qo,
     y=P,
     mode='lines',
-    name='Oferta'
+    name='Oferta',
+    line=dict(color='green', width=4)
 ))
 
 fig.add_trace(go.Scatter(
@@ -92,24 +127,38 @@ fig.add_trace(go.Scatter(
     name='Equilibrio',
     text=['Equilibrio'],
     textposition='top center',
-    marker=dict(size=12)
+    marker=dict(size=18, color='yellow')
 ))
 
 # =====================================================
-# MODULO MERCADO COMPETITIVO
+# FORMULAS
+# =====================================================
+
+st.latex(r"Q_d = a - bP")
+st.latex(r"Q_o = c + dP")
+
+# =====================================================
+# DASHBOARD
+# =====================================================
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.metric("Precio Equilibrio", round(P_eq, 2))
+
+with col2:
+    st.metric("Cantidad Equilibrio", round(Q_eq, 2))
+
+with col3:
+    st.metric("Pendiente Demanda", -b)
+
+# =====================================================
+# MERCADO COMPETITIVO
 # =====================================================
 
 if modulo == "Mercado Competitivo":
 
     st.subheader("📊 Mercado Competitivo")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.metric("Precio de equilibrio", round(P_eq, 2))
-
-    with col2:
-        st.metric("Cantidad de equilibrio", round(Q_eq, 2))
 
     fig.update_layout(
         title="Oferta y Demanda",
@@ -120,15 +169,20 @@ if modulo == "Mercado Competitivo":
 
     st.plotly_chart(fig, use_container_width=True)
 
+    st.markdown("---")
+    st.subheader("📚 Explicación Económica")
+
+    st.write(
+        "El equilibrio de mercado ocurre cuando la cantidad demandada es igual a la cantidad ofrecida."
+    )
+
 # =====================================================
-# MODULO ELASTICIDAD
+# ELASTICIDAD
 # =====================================================
 
 elif modulo == "Elasticidad":
 
     st.subheader("📉 Elasticidad de la Demanda")
-
-    st.markdown("### Seleccionar dos puntos")
 
     col1, col2 = st.columns(2)
 
@@ -172,7 +226,7 @@ elif modulo == "Elasticidad":
         y=[P1, P2],
         mode='markers',
         name='Puntos Elasticidad',
-        marker=dict(size=12)
+        marker=dict(size=12, color='cyan')
     ))
 
     fig.update_layout(
@@ -226,6 +280,8 @@ elif modulo == "Precio Máximo":
 
     st.plotly_chart(fig, use_container_width=True)
 
+    st.warning("El precio máximo genera escasez porque la demanda supera a la oferta.")
+
 # =====================================================
 # PRECIO MINIMO
 # =====================================================
@@ -268,6 +324,8 @@ elif modulo == "Precio Mínimo":
 
     st.plotly_chart(fig, use_container_width=True)
 
+    st.warning("El precio mínimo genera excedente porque la oferta supera a la demanda.")
+
 # =====================================================
 # IMPUESTOS
 # =====================================================
@@ -303,20 +361,18 @@ elif modulo == "Impuestos":
         x=Qo_imp,
         y=P,
         mode='lines',
-        name='Oferta con Impuesto'
+        name='Oferta con Impuesto',
+        line=dict(color='orange', width=4)
     ))
 
     fig.add_trace(go.Scatter(
         x=[Q_nuevo],
         y=[P_nuevo],
         mode='markers+text',
-        name='Nuevo Equilibrio',
-        text=['Nuevo'],
+        text=['Nuevo Equilibrio'],
         textposition='bottom center',
-        marker=dict(size=12)
+        marker=dict(size=18, color='orange')
     ))
-
-    st.warning("El impuesto desplaza la oferta hacia la izquierda.")
 
     fig.update_layout(
         title="Impacto del Impuesto",
@@ -326,6 +382,18 @@ elif modulo == "Impuestos":
     )
 
     st.plotly_chart(fig, use_container_width=True)
+
+    st.subheader("📊 Comparación")
+
+    st.table({
+        "Situación": ["Inicial", "Nueva"],
+        "Precio": [round(P_eq, 2), round(P_nuevo, 2)],
+        "Cantidad": [round(Q_eq, 2), round(Q_nuevo, 2)]
+    })
+
+    st.warning(
+        "El impuesto desplaza la oferta hacia la izquierda y reduce la cantidad de equilibrio."
+    )
 
 # =====================================================
 # SUBSIDIOS
@@ -357,10 +425,9 @@ elif modulo == "Subsidios":
         x=Qo_sub,
         y=P,
         mode='lines',
-        name='Oferta con Subsidio'
+        name='Oferta con Subsidio',
+        line=dict(color='blue', width=4)
     ))
-
-    st.success("El subsidio desplaza la oferta hacia la derecha.")
 
     fig.update_layout(
         title="Impacto del Subsidio",
@@ -370,6 +437,18 @@ elif modulo == "Subsidios":
     )
 
     st.plotly_chart(fig, use_container_width=True)
+
+    st.subheader("📊 Comparación")
+
+    st.table({
+        "Situación": ["Inicial", "Nueva"],
+        "Precio": [round(P_eq, 2), round(P_nuevo, 2)],
+        "Cantidad": [round(Q_eq, 2), round(Q_nuevo, 2)]
+    })
+
+    st.success(
+        "El subsidio desplaza la oferta hacia la derecha y aumenta la cantidad de equilibrio."
+    )
 
 # =====================================================
 # CUOTAS
@@ -399,10 +478,8 @@ elif modulo == "Cuotas":
         mode='markers+text',
         text=['Cuota'],
         textposition='top center',
-        marker=dict(size=12)
+        marker=dict(size=18, color='purple')
     ))
-
-    st.warning("La cuota restringe la cantidad y eleva el precio.")
 
     fig.update_layout(
         title="Sistema de Cuotas",
@@ -412,3 +489,95 @@ elif modulo == "Cuotas":
     )
 
     st.plotly_chart(fig, use_container_width=True)
+
+    st.warning("La cuota restringe la cantidad ofrecida y eleva el precio.")
+
+# =====================================================
+# FOOTER
+# =====================================================
+
+st.markdown("---")
+
+st.caption(
+    "TP Economía para Ingenieros • UNSTA • Simulador desarrollado por Amparo Ruiz, Candelaria Lopez Avila y Luz Maria Ponce de Leon"
+)
+fig = go.Figure()
+
+fig.update_layout(
+    template="plotly_dark",
+    paper_bgcolor="#0E1117",
+    plot_bgcolor="#0E1117",
+    font=dict(color="white")
+)
+fig.add_trace(go.Scatter(
+    x=Qd,
+    y=P,
+    mode='lines',
+    name='Demanda',
+    line=dict(color='red', width=4)
+))
+
+fig.add_trace(go.Scatter(
+    x=Qo,
+    y=P,
+    mode='lines',
+    name='Oferta',
+    line=dict(color='green', width=4)
+))
+st.markdown("---")
+
+st.subheader("📚 Explicación Económica")
+
+if P_eq > 0:
+    st.write(
+        "El equilibrio de mercado ocurre cuando la cantidad demandada es igual a la cantidad ofrecida."
+    )
+
+if modulo == "Impuestos":
+    st.write(
+        "El impuesto incrementa el costo de producción, desplaza la oferta hacia la izquierda y genera una caída en la cantidad de equilibrio."
+    )
+
+if modulo == "Precio Máximo":
+    st.write(
+        "El precio máximo genera escasez porque la demanda supera a la oferta."
+    )
+
+if modulo == "Precio Mínimo":
+    st.write(
+        "El precio mínimo genera excedente porque la oferta supera a la demanda."
+    )
+st.subheader("📊 Comparación")
+
+st.table({
+    "Situación": ["Inicial", "Nueva"],
+    "Precio": [round(P_eq,2), round(P_nuevo,2)],
+    "Cantidad": [round(Q_eq,2), round(Q_nuevo,2)]
+})
+
+if b + d == 0:
+    st.error("Las pendientes generan división por cero")
+    st.stop()
+st.markdown("---")
+st.caption(
+    "TP Economía para Ingenieros • UNSTA • Simulador desarrollado por Amparo Ruiz, Candelaria Lopez Avila y Luz Maria Ponce de Leon"
+)
+
+marker=dict(size=18, color='yellow')
+st.latex(r"Q_d = a - bP")
+st.latex(r"Q_o = c + dP")
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.metric("Precio Equilibrio", round(P_eq,2))
+
+with col2:
+    st.metric("Cantidad Equilibrio", round(Q_eq,2))
+
+with col3:
+    st.metric("Pendiente Demanda", -b)
+
+tema = st.sidebar.selectbox(
+    "Tema",
+    ["Oscuro", "Claro"]
+)
